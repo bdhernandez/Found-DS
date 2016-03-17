@@ -1,7 +1,17 @@
 str(refine)
+library(dplyr)
+library(tidyr)
+
+#edit company names
+refine$company <- gsub("^[Pp|Ff](.*)", "phillips", refine$company)
+refine$company <- gsub("^[Aa](.*)", "akzo", refine$company)
+refine$company <- gsub("^[Vv](.*)", "van houten", refine$company)
+refine$company <- gsub("^[Uu](.*)", "unilever", refine$company)
+refine
 
 #separated product code into 2 columns using tidyr::separate
-refine2 <- separate(refine, productcode, c("prodcode", "prodnum"), sep = "-" )
+names(refine)[names(refine)=="Product.code...number"] <- "prodcode"
+refine2 <- separate(refine, prodcode, c("prodcode", "prodnum"), sep = "-" )
 refine2
 
 #add product categories in category column, linked to values in prodcode column
