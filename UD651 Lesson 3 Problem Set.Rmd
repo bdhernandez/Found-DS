@@ -1,0 +1,102 @@
+---
+title: "UD651 Problem Set 3"
+author: "Bonnie Hernandez"
+date: "April 7, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Diamonds Data Set Basics
+
+After loading the diamonds data set, we see that there are 53940 observations of 10 variables. Three of those variables are ordered factors, and the help file tells us that D indicates the best diamond color. 
+
+```{r}
+library(ggplot2)
+library(dplyr)
+data("diamonds")
+View(diamonds)
+?diamonds
+```
+
+## Plotting the data
+A histogram of the diamond price frequencies shows that prices in the 0 to 5000 range are most common in this data set. In fact, the mean price is 3,933 and the median price is 2401. 
+```{r price, echo=FALSE}
+hist(diamonds$price, xlab = "price")
+summary(diamonds$price)
+```
+
+Further exploration of the price data show that there are 1729 diamonds below $500, zero below $250, and 1656 greater than or equal to $15,000.
+```{r}
+library(dplyr)
+diamonds %>% tally(price < 500) 
+diamonds %>% tally(price < 250)
+diamonds %>% tally(price >= 15000)
+```
+
+Refining the histogram helps us examine the area of high frequency at the low end of the pricing spectrum. We see that diamond prices between $500 and $1200 are the most common.
+```{r}
+qplot(x=diamonds$price, data = diamonds, xlab = 'price', binwidth = 5, xlim = c(250, 3000), breaks = seq(0, 3000, 100), color = 'red')
+ggsave('pricehistogram.png')
+```
+
+When we subset the price data by cut, it is clear that cut influences the range of prices for diamonds. The 'premium' cut contains the highest price in the data set ($18,820), while 'premium' and 'ideal' cuts contain the lowest price in the data set ($326). The 'ideal' cut has the lowest median price ($1810).
+```{r}
+qplot(x=price, data = subset(diamonds, !is.na(cut)), xlab = 'price', binwidth = 5, breaks = seq(0, 16000, 100), color = 'red') +
+  facet_wrap(~cut)
+by(diamonds$price, diamonds$cut, max)
+by(diamonds$price, diamonds$cut, min)
+by(diamonds$price, diamonds$cut, median)
+ggsave('histogrambycut.png')
+
+```
+
+Change the scales to 'free' to allow appropriate visualization of each data subset.
+```{r}
+qplot(x=price, data = subset(diamonds, !is.na(cut)), xlab = 'price', binwidth = 5, breaks = seq(0, 16000, 100), color = 'red') +
+  facet_wrap(~cut, scales = "free")
+ggsave('histogrambycut2.png')
+```
+
+Create a histogram of price per carat and facet it by cut. 
+```{r}
+qplot(x = price/carat, data = diamonds, xlab = 'price per carat', binwidth = 0.05) + 
+  scale_x_log10()+
+  facet_wrap(~cut)
+ggsave('histogramPricePerByCut.png')
+```
+
+##Price of diamonds by clarity
+```{r}
+ggplot(aes(x = clarity, y = price), data = diamonds) + geom_boxplot()
+ggsave('boxPricebyClarity.png')
+
+by(diamonds$price, diamonds$clarity, summary)
+```
+
+##IQR based on color
+```{r}
+by(diamonds$price, diamonds$color, summary)
+IQR(subset(diamonds, color = 'D')$price)
+IQR(subset(diamonds, color = 'J')$price)
+```
+
+##Price per carat by color
+Investigate the price per carat of diamonds across the different colors of diamonds using boxplots.
+```{r}
+qplot(x = color, y = price/carat, data = diamonds, geom = 'boxplot', 
+            color = I('black'), fill = I('blue'),
+            xlab = 'color', ylab= 'price per carat') +
+  scale_y_continuous()
+```
+
+##Weight of Diamonds in a Frequency Polygon
+Diamonds with weights around 0.3 and 1.01 have frequencies higher than 2000.
+```{r}
+ggplot(aes(x = carat), data = diamonds) + geom_freqpoly(binwidth = 0.01)
+ggsave('FreqPolyWeight.png')
+```
+
+
