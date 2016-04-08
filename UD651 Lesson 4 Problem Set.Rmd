@@ -10,7 +10,7 @@ library(ggplot2)
 ```
 
 
-## Relationship between price and x
+# Relationship between price and x
 The base scatterplot shows a non-linear relationship between price and x, indicating a possible proportional relationship. The points are concentrated between 300 and 7500 for price and about 3 and 7 for x. In the next plot, let's zoom in to examine the relationship more closely in this area.  
 
 ```{r baseplot, echo = FALSE}
@@ -41,7 +41,7 @@ cor.test(diamonds$price, diamonds$z)
 
 ```
 
-## Price vs. depth
+# Price vs. depth
 
 ```{r depth, echo=FALSE}
 ggplot(aes(x = depth, y = price), data = diamonds) + 
@@ -61,7 +61,7 @@ The Pearson product-moment correlation test shows a very loose, almost non-exist
 cor.test(diamonds$depth, diamonds$price)
 ```
 
-## Price vs. Carat
+# Price vs. Carat
 Scatterplot of price vs carat with the top 1% of price and carat values omitted.
 ```{r}
 ggplot(aes(x = carat, y = price), data = diamonds) + geom_point()+
@@ -69,7 +69,7 @@ ggplot(aes(x = carat, y = price), data = diamonds) + geom_point()+
   ylim(0, quantile(diamonds$price, 0.99))
 ```
 
-##Price vs. Volume
+#Price vs. Volume
 An unadjusted scatterplot of price versus volume shows a seemingly sharp, positive linear relationship between the two variables. A few outliers were noted, with one extreme outlier near volume 3800 and price 12,500.
 ```{r}
 vol <- diamonds$x * diamonds$y * diamonds$z
@@ -92,7 +92,7 @@ ggplot(aes(x = vol, y = price), data = vol2) + geom_point(alpha = 1/75, color = 
   geom_smooth(method = 'lm', color = 'yellow')
 ```
 
-##Diamonds By Clarity
+#Diamonds By Clarity
 ```{r}
 library(dplyr)
 diamondByClarity <- diamonds %>%
