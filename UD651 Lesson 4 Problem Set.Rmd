@@ -1,0 +1,122 @@
+---
+title: "EDA Project: Diamond Prices Part 2"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+```
+
+
+## Relationship between price and x
+The base scatterplot shows a non-linear relationship between price and x, indicating a possible proportional relationship. The points are concentrated between 300 and 7500 for price and about 3 and 7 for x. In the next plot, let's zoom in to examine the relationship more closely in this area.  
+
+```{r baseplot, echo = FALSE}
+ggplot(aes(x = x, y = price), data = subset(diamonds, x>0)) +
+  geom_point(alpha = 1/50, position = 'jitter', color = 'blue')+
+  xlim(3,10)
+```
+
+By applying a log10 transformation to each variable, we observe a more linear relationship. 
+
+```{r transplot, echo=FALSE}
+ggplot(aes(x = x, y = price), data = subset(diamonds, x>0)) +
+  geom_point(alpha = 1/50, position = 'jitter', color = 'blue')+
+  coord_cartesian(xlim = c(3, 11), ylim = c(300, 20000)) +
+  scale_x_log10(breaks = seq(3,11,1))+
+  scale_y_log10(breaks = seq(0, 20000, 2500))
+```
+
+# Correlation Tests for Price vs. x, y, and z
+A Pearson product-moment correlation test shows that the linear relationship between price and x is fairly strong: r = 0.884.
+Relationships between price and y, as well as price and z, are similarly strong: r = 0.865 for price vs. y and r = 0.861 for price vs. z. 
+
+
+```{r}
+cor.test(diamonds$price, diamonds$x)
+cor.test(diamonds$price, diamonds$y)
+cor.test(diamonds$price, diamonds$z)
+
+```
+
+## Price vs. depth
+
+```{r depth, echo=FALSE}
+ggplot(aes(x = depth, y = price), data = diamonds) + 
+  geom_point(color = 'purple')
+```
+
+In terms of depth, most diamonds fall between the values of 59 and 64.
+```{r}
+ggplot(aes(x = depth, y = price), data = diamonds) + 
+  geom_point(alpha = 1/100, color = 'purple')+
+  scale_x_continuous(limits= c(50, 75), breaks = seq(50,75, 2))
+```
+
+#Correlation Test: Depth vs. Price
+The Pearson product-moment correlation test shows a very loose, almost non-existant, linear relationship between price and depth: r = -0.011.
+```{r}
+cor.test(diamonds$depth, diamonds$price)
+```
+
+## Price vs. Carat
+Scatterplot of price vs carat with the top 1% of price and carat values omitted.
+```{r}
+ggplot(aes(x = carat, y = price), data = diamonds) + geom_point()+
+  xlim(0, quantile(diamonds$carat, 0.99))+
+  ylim(0, quantile(diamonds$price, 0.99))
+```
+
+##Price vs. Volume
+An unadjusted scatterplot of price versus volume shows a seemingly sharp, positive linear relationship between the two variables. A few outliers were noted, with one extreme outlier near volume 3800 and price 12,500.
+```{r}
+vol <- diamonds$x * diamonds$y * diamonds$z
+ggplot(aes(x = vol, y = price), data = diamonds) + geom_point()
+
+```
+
+#Correlation between price and volume
+After excluding outliers with a volume greater than or equal to 800, the correlation between the two variables is strong and positive: r = 0.92. 
+```{r}
+diamonds$vol <- vol
+vol2 <- subset(diamonds, vol < 800 & vol > 0)
+cor.test(vol2$price, vol2$vol)
+```
+
+#Linear model for predicting the price of diamonds
+Despite a strong correlation between the two variables, a linear model may not be the best tool for predicting the price of diamonds based on volume. A linear model may be appropriate for volumes up to 175, but beyond that point, related prices begin to vary susbstantially for any given volume and the linear model loses its predictive power as standard errors grow.  
+```{r}
+ggplot(aes(x = vol, y = price), data = vol2) + geom_point(alpha = 1/75, color = 'blue')+
+  geom_smooth(method = 'lm', color = 'yellow')
+```
+
+##Diamonds By Clarity
+```{r}
+library(dplyr)
+diamondByClarity <- diamonds %>%
+  group_by(clarity) %>%
+    summarise(mean_price = mean(price), media_price = median(price), min_price = min(price), max_price = max(price), n = n())
+```
+
+Reviewing two plots of mean diamond prices by clarity and by color, mean price seems to be linked to each variable because mean price moves as we move from one category to the next. However, mean price seems to decline as both clarity and color improve, which flies in the face of conventional wisdom.
+```{r}
+library(gridExtra)
+library(ggplot2)
+library(dplyr)
+
+diamonds_by_clarity <- group_by(diamonds, clarity)
+diamonds_mp_by_clarity <- summarise(diamonds_by_clarity, mean_price = mean(price))
+
+diamonds_by_color <- group_by(diamonds, color)
+diamonds_mp_by_color <- summarise(diamonds_by_color, mean_price = mean(price))
+
+d1 <- ggplot(diamonds_by_color, aes(x = color, y = price)) +
+  geom_boxplot()
+d2 <- ggplot(diamonds_by_clarity, aes(x = clarity, y = price)) +
+  geom_boxplot()
+grid.arrange(d2, d1, ncol = 2)
+ggsave('boxclarity_color.png')
+```
+
