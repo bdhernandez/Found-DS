@@ -29,7 +29,7 @@ ggplot(aes(x = x, y = price), data = subset(diamonds, x>0)) +
   scale_y_log10(breaks = seq(0, 20000, 2500))
 ```
 
-# Correlation Tests for Price vs. x, y, and z
+### Correlation Tests for Price vs. x, y, and z
 A Pearson product-moment correlation test shows that the linear relationship between price and x is fairly strong: r = 0.884.
 Relationships between price and y, as well as price and z, are similarly strong: r = 0.865 for price vs. y and r = 0.861 for price vs. z. 
 
@@ -55,7 +55,7 @@ ggplot(aes(x = depth, y = price), data = diamonds) +
   scale_x_continuous(limits= c(50, 75), breaks = seq(50,75, 2))
 ```
 
-#Correlation Test: Depth vs. Price
+###Correlation Test: Depth vs. Price
 The Pearson product-moment correlation test shows a very loose, almost non-existant, linear relationship between price and depth: r = -0.011.
 ```{r}
 cor.test(diamonds$depth, diamonds$price)
@@ -77,7 +77,7 @@ ggplot(aes(x = vol, y = price), data = diamonds) + geom_point()
 
 ```
 
-#Correlation between price and volume
+###Correlation between price and volume
 After excluding outliers with a volume greater than or equal to 800, the correlation between the two variables is strong and positive: r = 0.92. 
 ```{r}
 diamonds$vol <- vol
@@ -85,7 +85,7 @@ vol2 <- subset(diamonds, vol < 800 & vol > 0)
 cor.test(vol2$price, vol2$vol)
 ```
 
-#Linear model for predicting the price of diamonds
+###Linear model for predicting the price of diamonds
 Despite a strong correlation between the two variables, a linear model may not be the best tool for predicting the price of diamonds based on volume. A linear model may be appropriate for volumes up to 175, but beyond that point, related prices begin to vary susbstantially for any given volume and the linear model loses its predictive power as standard errors grow.  
 ```{r}
 ggplot(aes(x = vol, y = price), data = vol2) + geom_point(alpha = 1/75, color = 'blue')+
