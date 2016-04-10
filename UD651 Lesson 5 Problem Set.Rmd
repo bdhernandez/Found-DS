@@ -1,0 +1,75 @@
+---
+title: 'EDA: Diamonds Part 3'
+author: "Bonnie Hernandez"
+date: "April 10, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+data("diamonds")
+```
+
+##Price Histograms with Facets and Color
+```{r diamonds, echo=FALSE}
+qplot(x = price, data = diamonds, fill = cut, binwidth = 0.05) + facet_wrap(~color) +
+  scale_x_log10()
+ggsave('priceFacetsColor.png')
+```
+
+##Price vs. Table Colored by Cut
+Plotting price versus table shows that the table range for the 'ideal' cut is typically from 53 to 57. The typical table range for the 'premium' cut is from 58 to 62
+```{r table, echo=FALSE}
+ggplot(aes(x = table, y = price), data = diamonds) + geom_point(aes(color = cut)) +
+  coord_cartesian(xlim=c(50,80))+
+  scale_x_continuous(breaks = seq(50,80, 2))
+ggsave('priceVtableByCut.png')
+```
+
+##Price vs. Volume and Diamond Clarity
+
+```{r volume, echo=FALSE}
+diamonds$vol <- diamonds$x * diamonds$y * diamonds$z
+ggplot(aes(x = vol, y = price), data = diamonds) + geom_point(aes(color = clarity)) + scale_y_log10() + xlim(0, quantile(diamonds$vol, 0.99)) +
+  scale_color_brewer(type = 'div')
+ggsave('priceVvolumeByclarity.png')
+```
+
+#Facebook dataset
+
+##Proportion of Friendships Initiated
+```{r prop, echo=FALSE}
+pf <- read.csv('pseudo_facebook.tsv', sep = '\t')
+pf$year_joined <- floor(2014-pf$tenure/365)
+pf$year_joined.bucket <- cut(pf$year_joined, 
+                             c(2004, 2009, 2011, 2012, 2014))
+pf$prop_initiated <- pf$friendships_initiated/pf$friend_count
+pf$prop_initiated
+ggplot(aes(x = tenure, y = prop_initiated), data = subset(pf, !is.na(prop_initiated)))+
+  geom_line(aes(color = year_joined.bucket), stat = 'summary', fun.y = median)
+ggsave('propinitiated.png')
+```
+
+When we smooth out the plot, it appears that people who joined since 2012 initiated a higher proportion of their friend count that those who joined at other times. The mean proportion of friendships initiated for this group is 0.67.
+```{r prop, echo=FALSE}
+pf$prop_initiated <- pf$friendships_initiated/pf$friend_count
+ggplot(aes(x = tenure, y = prop_initiated), data = subset(pf, !is.na(prop_initiated)))+
+  geom_line(aes(color = year_joined.bucket), stat = 'summary', fun.y = median)+
+  geom_smooth()
+ggsave('propinitiated_smooth.png')
+```
+
+```{r}
+names(pf)
+by(pf[,"prop_initiated"], pf[,"year_joined.bucket"], summary)
+```
+
+#Back to Diamonds Dataset
+
+```{r price/carat, echo=FALSE}
+ggplot(aes(x = cut, y = price/carat), data = diamonds) + geom_point(aes(color = color), position = 'jitter') + facet_wrap(~clarity) +
+scale_color_brewer(type = 'div')
+ggsave('pricepercaratBycut.png')
+```
+
